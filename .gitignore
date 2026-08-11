@@ -1,0 +1,23 @@
+# Python Cache and Compiled Files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual Environments
+venv/
+env/
+.env
+
+# Jupyter Notebook Checkpoints
+.ipynb_checkpoints/
+
+# IDE and System Files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Plot Outputs (Optional: uncomment if you don't want to upload generated graphs)
+# *.png
+# *.pdf
+# *.svg
