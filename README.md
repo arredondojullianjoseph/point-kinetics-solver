@@ -55,7 +55,7 @@ python point_kinetics.py
 
 ## Expected Output
 
-Running the solver with the default parameters will output the final normalized neutron population at $t = 10$ seconds:
+Running the solver with the default parameters will output the final normalized neutron population at t = 10 s:
 ```text
 Final relative power: 3.0305
 ```
