@@ -17,7 +17,7 @@ env/
 .DS_Store
 Thumbs.db
 
-# Plot Outputs (Optional: uncomment if you don't want to upload generated graphs)
+# Plot Outputs
 # *.png
 # *.pdf
 # *.svg
