@@ -51,3 +51,14 @@ To run the current solver, ensure you have `numpy` and `scipy` installed
 and then run:
 ```bash
 python point_kinetics.py
+```
+
+## Expected Output
+
+Running the solver with the default parameters will output the final normalized neutron population at $t = 10$ seconds:
+```text
+Final relative power: 3.0305
+```
+
+
+
