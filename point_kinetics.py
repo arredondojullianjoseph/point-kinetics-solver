@@ -51,7 +51,6 @@ def main():
     plt.figure(figsize=(10, 6))
     plt.plot(time, power, 'b-', linewidth=2, label='Relative Reactor Power (n)')
     plt.axvline(x=1.0, color='r', linestyle='--', alpha=0.5, label='Reactivity Step Insertion')
-
     plt.title('Point Reactor Kinetics Transient (Step Reactivity Insertion)', fontsize=14)
     plt.xlabel('Time (seconds)', fontsize=12)
     plt.ylabel('Normalized Power', fontsize=12)
