@@ -9,8 +9,12 @@ Welcome! I'm currently building this point reactor kinetics solver from the grou
 The script (`point_kinetics.py`) solves the standard point kinetics equations for one prompt neutron group and six delayed neutron precursor groups:
 
 $$\frac{dn}{dt} = \frac{\rho(t) - \beta_{total}}{\Lambda} n(t) + \sum_{i=1}^{6} \lambda_i C_i(t)$$
-
 $$\frac{dC_i}{dt} = \frac{\beta_i}{\Lambda} n(t) - \lambda_i C_i(t)$$
+
+After a step insertion, power doesn't ramp up smoothly —
+it jumps almost instantly (precursors can't respond on a 10⁻⁴ s timescale), then climbs
+more slowly afterward on a period set by the precursor decay. You'll see this clearly on
+the log-scale plot below.
 
 **Note:** In the Python code, the variable `lambda_decay` refers to the array of precursor decay constants ($\lambda_i$ above), and `gen_time` refers to the prompt neutron generation time ($\Lambda$ above). We use `lambda_decay` instead of standard notation because `lambda` is a reserved keyword in Python! Keep that in mind when comparing the textbook equations to the codebase.
 
@@ -22,12 +26,12 @@ $$\frac{dC_i}{dt} = \frac{\beta_i}{\Lambda} n(t) - \lambda_i C_i(t)$$
 - **Steady-State Initialization:** Automatically sets the initial precursor concentrations so the system starts from a critical steady state ($n_0 = 1$).
 - **Plotting & Visualization:** Uses `matplotlib` to graph the normalized reactor power versus time on a logarithmic scale, visually indicating the step insertion.
 - **Detailed Documentation:** The code features conversational, beginner-friendly inline comments that explain the physics and mathematical reasoning behind the ODEs.
-
+  
 ## What's Next?
 
 - **Analytical Verification:** Benchmarking against established models (Inhour Equation & Prompt Jump Approximation).
-- **Expanded Usage:** Adding setup instructions, varying step sizes, and a deeper breakdown of the underlying physics.
-
+- **Expanded Usage:** Adding setup instructions, and varying step sizes..
+  
 ## Usage
 
 To run the current solver, ensure you have `numpy`, `scipy`, and `matplotlib` installed and then run:
@@ -36,6 +40,5 @@ python point_kinetics.py
 ```
 
 ## Expected Output
-
 Running the solver with the default parameters will generate a transient response plot and automatically save it to your directory as `step_response.png`.
 ![Step Reactivity Insertion Response](step_response.png)
