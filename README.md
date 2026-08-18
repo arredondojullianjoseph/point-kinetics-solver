@@ -1,14 +1,13 @@
 # Point Reactor Kinetics Solver
-
 Status: Work in Progress 🚧
 
-Welcome! I'm currently building this point reactor kinetics solver from the ground up. The core numerical solver, transient visualization, and inline documentation are now in place. Next up: expanding analytical verification!
+Welcome! I'm currently building this point reactor kinetics solver from the ground up. The core numerical solver, transient visualization, and inline documentation, and inhour verification are now in place. Next up: verifying against the Prompt Jump Approximation.
 
 ## Mathematical Model
-
 The script (`point_kinetics.py`) solves the standard point kinetics equations for one prompt neutron group and six delayed neutron precursor groups:
 
 $$\frac{dn}{dt} = \frac{\rho(t) - \beta_{total}}{\Lambda} n(t) + \sum_{i=1}^{6} \lambda_i C_i(t)$$
+
 $$\frac{dC_i}{dt} = \frac{\beta_i}{\Lambda} n(t) - \lambda_i C_i(t)$$
 
 After a step insertion, power doesn't ramp up smoothly —
@@ -19,26 +18,41 @@ the log-scale plot below.
 **Note:** In the Python code, the variable `lambda_decay` refers to the array of precursor decay constants ($\lambda_i$ above), and `gen_time` refers to the prompt neutron generation time ($\Lambda$ above). We use `lambda_decay` instead of standard notation because `lambda` is a reserved keyword in Python! Keep that in mind when comparing the textbook equations to the codebase.
 
 ## Current Implementation
-
 - **Core Solver:** Solves the kinetics equations in Python, using `numpy` and `scipy`.
 - **Stiff ODE Integration:** Uses `scipy.integrate.solve_ivp` with the `Radau` method to handle the stiffness (the prompt neutron generation time is ~10⁻⁴ s, while the delayed neutron precursors evolve over seconds).
 - **Reactivity Insertion:** Models a step reactivity insertion ($\rho = 0.002$ at $t = 1$ s). This is roughly 30% of $\beta$ for U-235, simulating a controllable transient safely below the prompt critical threshold.
 - **Steady-State Initialization:** Automatically sets the initial precursor concentrations so the system starts from a critical steady state ($n_0 = 1$).
 - **Plotting & Visualization:** Uses `matplotlib` to graph the normalized reactor power versus time on a logarithmic scale, visually indicating the step insertion.
+- **Analytical Verification:** `Inhour_verification.py` solves the six-group model out to 60 s, finds the numerical reactor period, and calculates the percent error vs the root of the inhour equation (found via `scipy.optimize.brentq`). Currently agrees to within 0.21%.
 - **Detailed Documentation:** The code features conversational, beginner-friendly inline comments that explain the physics and mathematical reasoning behind the ODEs.
-  
+
+## Verification Results
+Running `Inhour_verification.py` with the default 200 pcm step gives:
+
+| Quantity | Value |
+|---|---|
+| Reactivity step | 200.0 pcm |
+| Analytical period (inhour root) | 17.404 s |
+| Numerical period (fit, t ≥ 40 s) | 17.367 s |
+| Percent difference | 0.213 % |
+
+The six-group solver's asymptotic period agrees with the inhour equation to within 0.21%, confirming the ODE solver is behaving correctly in that timescale.
+
 ## What's Next?
+- **Prompt Jump Approximation:** Verifying the near-instant power jump right after the step insertion against the analytical ratio, $n(0^+)/n(0^-) = \beta/(\beta - \rho)$.
+- **Expanded Usage:** Adding setup instructions, and varying step sizes.
 
-- **Analytical Verification:** Benchmarking against established models (Inhour Equation & Prompt Jump Approximation).
-- **Expanded Usage:** Adding setup instructions, and varying step sizes..
-  
 ## Usage
-
 To run the current solver, ensure you have `numpy`, `scipy`, and `matplotlib` installed and then run:
 ```bash
 python point_kinetics.py
 ```
+To run the inhour equation verification:
+```bash
+python Inhour_verification.py
+```
 
 ## Expected Output
 Running the solver with the default parameters will generate a transient response plot and automatically save it to your directory as `step_response.png`.
+
 ![Step Reactivity Insertion Response](step_response.png)
