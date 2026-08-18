@@ -15,7 +15,7 @@ it jumps almost instantly (precursors can't respond on a 10⁻⁴ s timescale), 
 more slowly afterward on a period set by the precursor decay. You'll see this clearly on
 the log-scale plot below.
 
-**Note:** In the Python code, the variable `lambda_decay` refers to the array of precursor decay constants ($\lambda_i$ above), and `gen_time` refers to the prompt neutron generation time ($\Lambda$ above). We use `lambda_decay` instead of standard notation because `lambda` is a reserved keyword in Python! Keep that in mind when comparing the textbook equations to the codebase.
+**Note:** In the code, the variable `lambda_decay` refers to the array of precursor decay constants ($\lambda_i$ above), and `gen_time` refers to the prompt neutron generation time ($\Lambda$ above). We use `lambda_decay` instead of the single-letter textbook notation because `lambda` is a reserved keyword in Python. Keep that in mind when comparing the equations to the code.
 
 ## Current Implementation
 - **Core Solver:** Solves the kinetics equations in Python, using `numpy` and `scipy`.
