@@ -12,7 +12,9 @@ import matplotlib.pyplot as plt
 from scipy.integrate import solve_ivp
 
 # From Lamarsh & Baratta, "Introduction to Nuclear Engineering," 3rd ed., Table 3.5
-lambda_decay = np.array([0.0124, 0.0305, 0.111, 0.301, 1.14, 3.01])  # How fast the precursors decay (in s^-1)
+lambda_decay = np.array(
+    [0.0124, 0.0305, 0.111, 0.301, 1.14, 3.01]
+)  # How fast the precursors decay (in s^-1)
 beta = np.array(
     [0.000215, 0.001424, 0.001274, 0.002568, 0.000748, 0.000273]
 )  # The fraction of neutrons that are delayed in each group
@@ -28,7 +30,7 @@ def reactivity(t):
     if t < 1.0:
         return 0.0
     else:
-        return 0.002 # ~30% of beta (650 pcm for U-235), so we stay safely below prompt critical 
+        return 0.002  # ~30% of beta (650 pcm for U-235), so we stay safely below prompt critical
 
 
 def kinetics_odes(t, y):
@@ -85,10 +87,14 @@ def main():
     plt.plot(time, power, "b-", linewidth=2, label="Relative reactor power (n)")
 
     # Draws a line where the 200 pcm reactivity step is inserted
-    plt.axvline(x=1.0, color="r", linestyle="--", alpha=0.5, label="Reactivity step insertion")
+    plt.axvline(
+        x=1.0, color="r", linestyle="--", alpha=0.5, label="Reactivity step insertion"
+    )
 
     # Labels graph
-    plt.title("Point Reactor Kinetics Transient (Step Reactivity Insertion)", fontsize=14)
+    plt.title(
+        "Point Reactor Kinetics Transient (Step Reactivity Insertion)", fontsize=14
+    )
     plt.xlabel("Time (seconds)", fontsize=12)
     plt.ylabel("Normalized power", fontsize=12)
     plt.grid(True, which="both", linestyle="--", alpha=0.7)
