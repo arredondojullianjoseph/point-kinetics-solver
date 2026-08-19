@@ -10,7 +10,7 @@ $$\frac{dn}{dt} = \frac{\rho(t) - \beta_{total}}{\Lambda} n(t) + \sum_{i=1}^{6} 
 
 $$\frac{dC_i}{dt} = \frac{\beta_i}{\Lambda} n(t) - \lambda_i C_i(t)$$
 
-After a step insertion, power doesn't ramp up smoothly —
+After a step insertion, power doesn't ramp up smoothly
 it jumps almost instantly (precursors can't respond on a 10⁻⁴ s timescale), then climbs
 more slowly afterward on a period set by the precursor decay. You'll see this clearly on
 the log-scale plot below.
