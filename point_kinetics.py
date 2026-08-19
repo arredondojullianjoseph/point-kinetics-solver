@@ -11,7 +11,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.integrate import solve_ivp
 
-# From Lamarsh & Baratta, "Introduction to Nuclear Engineering," 3rd ed., Table 3.5
 lambda_decay = np.array(
     [0.0124, 0.0305, 0.111, 0.301, 1.14, 3.01]
 )  # How fast the precursors decay (in s^-1)
