@@ -38,7 +38,7 @@ Running `Inhour_verification.py` with the default 200 pcm step gives:
 
 The six-group solver's asymptotic period agrees with the inhour equation to within 0.21%, confirming the ODE solver is behaving correctly in that timescale.
 
-That remaining 0.21% isn't necessarily solver error. The inhour equation describes the *pure* asymptotic mode, but the actual transient is six exponential terms (one per precursor group), and the fastest still hasn't completely vanished by t = 40 s. Pushing the fit window later would lower the erorr even further.
+That remaining 0.21% isn't necessarily solver error. The inhour equation describes the *pure* asymptotic mode, but the actual transient is six exponential terms (one per precursor group), and the fastest still hasn't completely vanished by t = 40 s. Pushing the fit window later would lower the error even further.
 
 ## What's Next?
 - **Prompt Jump Approximation:** Verifying the near-instant power jump right after the step insertion against the analytical ratio, $n(0^+)/n(0^-) = \beta/(\beta - \rho)$.
