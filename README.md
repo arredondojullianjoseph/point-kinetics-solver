@@ -62,4 +62,4 @@ Running the solver with the default parameters will generate a transient respons
 ## References
 - J. R. Lamarsh, A. J. Baratta, *Introduction to Nuclear Engineering*, 3rd ed., Prentice-Hall, 2001.
   - Table 3.5 — six-group delayed neutron data (decay constants and yield fractions) used in `point_kinetics.py`.
-  - Chapter 7, "The Time-Dependent Reactor" — derivation of the point kinetics equations, the inhour equation, and the prompt jump approximation used in the verification scripts.
+  - Chapter 7, "The Time-Dependent Reactor" — derivation of the point kinetics equations, the inhour equation, and the prompt jump approximation (to be used in a later verification script).
