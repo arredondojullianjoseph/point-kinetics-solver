@@ -38,6 +38,8 @@ Running `Inhour_verification.py` with the default 200 pcm step gives:
 
 The six-group solver's asymptotic period agrees with the inhour equation to within 0.21%, confirming the ODE solver is behaving correctly in that timescale.
 
+That remaining 0.21% isn't solver error — it's a real feature of the physics. The inhour equation describes the *pure* asymptotic mode, but the actual transient is a mix of six exponential terms (one per precursor group), and the fastest of those still hasn't fully died out by t = 40 s. Pushing the fit window later (say, t ≥ 50 s) tightens the agreement further, at the cost of needing an even longer simulation to get there.
+
 ## What's Next?
 - **Prompt Jump Approximation:** Verifying the near-instant power jump right after the step insertion against the analytical ratio, $n(0^+)/n(0^-) = \beta/(\beta - \rho)$.
 - **Expanded Usage:** Adding setup instructions, and varying step sizes.
@@ -56,3 +58,8 @@ python Inhour_verification.py
 Running the solver with the default parameters will generate a transient response plot and automatically save it to your directory as `step_response.png`.
 
 ![Step Reactivity Insertion Response](step_response.png)
+
+## References
+- J. R. Lamarsh, A. J. Baratta, *Introduction to Nuclear Engineering*, 3rd ed., Prentice-Hall, 2001.
+  - Table 3.5 — six-group delayed neutron data (decay constants and yield fractions) used in `point_kinetics.py`.
+  - Chapter 7, "The Time-Dependent Reactor" — derivation of the point kinetics equations, the inhour equation, and the prompt jump approximation used in the verification scripts.
