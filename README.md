@@ -24,7 +24,7 @@ the log-scale plot below.
 - **Steady-State Initialization:** Automatically sets the initial precursor concentrations so the system starts from a critical steady state ($n_0 = 1$).
 - **Plotting & Visualization:** Uses `matplotlib` to graph the normalized reactor power versus time on a logarithmic scale, visually indicating the step insertion.
 - **Analytical Verification (Inhour):** `Inhour_verification.py` solves the six-group model out to 60 s, finds the numerical reactor period, and calculates the percent error vs the root of the inhour equation (found via `scipy.optimize.brentq`). Currently agrees to within 0.21%.
-- **Analytical Verification (Prompt Jump):** `Prompt_jump_verification.py` runs a short simulation to capture the almost instant power spike right after the step insertion and compares it against the analytical Prompt Jump Approximation. Currently agrees within .66%.
+- **Analytical Verification (Prompt Jump):** `Prompt_jump_verification.py` runs a short simulation to capture the almost instant power spike right after the step insertion and compares it against the analytical Prompt Jump Approximation. Currently agrees within 0.66%.
 - **Detailed Documentation:** The code features conversational, beginner-friendly inline comments that explain the physics and mathematical reasoning behind the ODEs.
 
 ## Verification Results
