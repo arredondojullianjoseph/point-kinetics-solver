@@ -45,15 +45,12 @@ def reactivity_ramp(t, t_start, t_end, rho_final):
         
 def kinetics_odes(t, y, reactivity_fn=reactivity):
     """
-    y[0] is the reactor power (neutron population, n).
-    y[1:] are the concentrations of our delayed neutron precursors (C_i).
-
-    reactivity_fn lets us use different insertions (step, ramp, etc.)
+    Reactivity_fn lets us use different insertions (step, ramp, etc.)
     without touching the ODEs themselves.
     """
     
-    n = y[0]
-    C = y[1:]
+    n = y[0] # The reactor power (neutron population, n).
+    C = y[1:] # he concentrations of our delayed neutron precursors
     rho = reactivity_fn(t)
     dydt = np.zeros_like(y)
     
@@ -128,7 +125,7 @@ def main_ramp():
     # Reactivity goes from 0 to 200 pcm between t=1s and t=3s
     t_start, t_end, rho_final = 1.0, 3.0, 0.002
     
-    # Binds the ramp parameters, so solve_ivp only has to call it as f(t)
+    
     def ramp_fn(t):
         return reactivity_ramp(t, t_start, t_end, rho_final)
     t_span = (0.0, 10.0)
