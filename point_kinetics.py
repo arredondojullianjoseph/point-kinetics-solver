@@ -50,7 +50,7 @@ def kinetics_odes(t, y, reactivity_fn=reactivity):
     """
     
     n = y[0] # The reactor power (neutron population, n).
-    C = y[1:] # he concentrations of our delayed neutron precursors
+    C = y[1:] # The concentrations of our delayed neutron precursors
     rho = reactivity_fn(t)
     dydt = np.zeros_like(y)
     
