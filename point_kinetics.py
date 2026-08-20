@@ -1,7 +1,8 @@
 """
 point_kinetics.py
+
 This script simulates how a nuclear reactor's power changes when we suddenly
-introduce reactivity (a step insertion) using the six-group point kinetics model.
+introduce reactivity (a step insertion and a ramp insertion) using the six-group point kinetics model.
 We're using scipy's Radau method to solve the ODEs because these equations are
 stiff (The prompt neutron term decays on a ~1e-4 s timescale while the precursors evolve over seconds).
 The script then plots normalized power vs. time.
@@ -20,7 +21,6 @@ beta = np.array(
 beta_total = beta.sum()  # The total delayed neutron fraction (~0.0065 for U-235)
 gen_time = 1e-4  # The prompt neutron generation time (Lambda, in seconds).
 
-
 def reactivity(t):
     """
     Step insertion: reactor sits at delayed critical until t = 1 s,
@@ -30,41 +30,56 @@ def reactivity(t):
         return 0.0
     else:
         return 0.002  # ~30% of beta (650 pcm for U-235), so we stay safely below prompt critical
-
-
-def kinetics_odes(t, y):
+        
+def reactivity_ramp(t, t_start, t_end, rho_final):
+    """
+    Ramp insertion: reactor sits at delayed critical until t_start,
+    then reactivity rises linearly to rho_final by t_end, and holds.
+    """
+    if t < t_start:
+        return 0.0
+    elif t < t_end:
+        return rho_final * (t - t_start) / (t_end - t_start)
+    else:
+        return rho_final
+        
+def kinetics_odes(t, y, reactivity_fn=reactivity):
     """
     y[0] is the reactor power (neutron population, n).
     y[1:] are the concentrations of our delayed neutron precursors (C_i).
+
+    reactivity_fn lets us use different insertions (step, ramp, etc.)
+    without touching the ODEs themselves.
     """
+    
     n = y[0]
     C = y[1:]
-    rho = reactivity(t)
-
+    rho = reactivity_fn(t)
     dydt = np.zeros_like(y)
-
+    
     # Prompt term (rho - beta)/Lambda * n, plus the delayed source from precursors decaying back into neutrons.
     dydt[0] = (rho - beta_total) / gen_time * n + np.sum(lambda_decay * C)
-
+    
     # Each precursor group is grown by fission at a rate of beta_i/Lambda * n, and depletes by its own decay constant.
     for i in range(6):
         dydt[i + 1] = (beta[i] / gen_time) * n - lambda_decay[i] * C[i]
-
     return dydt
-
-
-def main():
-    # Assumes the reactor has been running at a steady power level of 1 for a while.
+    
+def steady_state_y0(n0=1.0):
+    # Assumes the reactor has been running at a steady power level of n0 for a while.
     # This means everything is in balance (the derivatives are zero),
     # so the precursors are in equilibrium (dC_i/dt = 0 => C_i = beta_i * n0 / (Lambda * lambda_i)).
-    n0 = 1.0
+    # Pulled out into its own function since every script in this project needs it.
     C0 = beta * n0 / (gen_time * lambda_decay)
-    y0 = np.concatenate(([n0], C0))
-
+    return np.concatenate(([n0], C0))
+    
+def main():
+    y0 = steady_state_y0()
+    
     # Generates what happens over 10 seconds, grabbing 1000 data points
     t_span = (0.0, 10.0)
     t_eval = np.linspace(*t_span, 1000)
-
+    
     # Solving the ODEs
     solution = solve_ivp(
         fun=kinetics_odes,
@@ -76,20 +91,20 @@ def main():
         atol=1e-10,
         rtol=1e-8,
     )
-
+    
     # Pulls out the results for the graph
     time = solution.t
     power = solution.y[0]
-
+    
     # Plots
     plt.figure(figsize=(10, 6))
     plt.plot(time, power, "b-", linewidth=2, label="Relative reactor power (n)")
-
+    
     # Draws a line where the 200 pcm reactivity step is inserted
     plt.axvline(
         x=1.0, color="r", linestyle="--", alpha=0.5, label="Reactivity step insertion"
     )
-
+    
     # Labels graph
     plt.title(
         "Point Reactor Kinetics Transient (Step Reactivity Insertion)", fontsize=14
@@ -97,16 +112,56 @@ def main():
     plt.xlabel("Time (seconds)", fontsize=12)
     plt.ylabel("Normalized power", fontsize=12)
     plt.grid(True, which="both", linestyle="--", alpha=0.7)
-
+    
     # Uses log scale due to reactor power being able to swing by orders of magnitude
     plt.yscale("log")
     plt.legend(fontsize=12)
     plt.tight_layout()
-
+    
     # Saves plot
     plt.savefig("step_response.png", dpi=150)
-    plt.show()
-
-
+    
+def main_ramp():
+    # Same steady-state setup as main(), just fed into the ramp insertion instead
+    y0 = steady_state_y0()
+    
+    # Reactivity goes from 0 to 200 pcm between t=1s and t=3s
+    t_start, t_end, rho_final = 1.0, 3.0, 0.002
+    
+    # Binds the ramp parameters, so solve_ivp only has to call it as f(t)
+    def ramp_fn(t):
+        return reactivity_ramp(t, t_start, t_end, rho_final)
+    t_span = (0.0, 10.0)
+    t_eval = np.linspace(*t_span, 1000)
+    solution = solve_ivp(
+        fun=kinetics_odes,
+        t_span=t_span,
+        y0=y0,
+        t_eval=t_eval,
+        method="Radau",
+        max_step=1e-3,
+        atol=1e-10,
+        rtol=1e-8,
+        args=(ramp_fn,),  # passed through to kinetics_odes as reactivity_fn
+    )
+    time = solution.t
+    power = solution.y[0]
+    plt.figure(figsize=(10, 6))
+    plt.plot(time, power, "b-", linewidth=2, label="Relative reactor power (n)")
+    
+    # Shades the ramp region 
+    plt.axvspan(t_start, t_end, color="r", alpha=0.15, label="Reactivity ramp")
+    plt.title(
+        "Point Reactor Kinetics Transient (Ramp Reactivity Insertion)", fontsize=14
+    )
+    plt.xlabel("Time (seconds)", fontsize=12)
+    plt.ylabel("Normalized power", fontsize=12)
+    plt.grid(True, which="both", linestyle="--", alpha=0.7)
+    plt.yscale("log")
+    plt.legend(fontsize=12)
+    plt.tight_layout()
+    plt.savefig("ramp_response.png", dpi=150)
+    
 if __name__ == "__main__":
     main()
+    main_ramp()
