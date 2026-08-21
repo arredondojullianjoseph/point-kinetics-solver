@@ -88,6 +88,7 @@ The ramp case agrees with the inhour equation to within 0.24%, consistent with t
 
 ## What's next
 - **Ramp Convergence Verification:** Will check the simulation's numerical convergence by running two simulations, one with normal step size and another with half, then comparing. If cutting the step size in half doesn't change the answer, that's good evidence the solver's converged on the correct answer.
+- 
 ## Usage
 To run the current solver, ensure you have `numpy`, `scipy`, and `matplotlib` installed and then run:
 ```bash
@@ -101,7 +102,10 @@ To run the Prompt Jump Approximation verification:
 ```bash
 python Prompt_Jump_Approximation.py
 ```
-
+To run the Ramp period verification:
+```bash
+python Ramp_period_verification.py
+```
 ## Expected Output
 Running the solver with the default parameters will generate two transient response plots and automatically save them to your directory as `step_response.png` and `ramp_response.png`.
  
