@@ -134,5 +134,5 @@ Running the solver with the default parameters will generate two transient respo
 
 ## References
 - J. J. Duderstadt, L. J. Hamilton, *Nuclear Reactor Analysis*, John Wiley & Sons, 1976.
-  - (Tabel 2-3) - six-group delayed neutron data used in `point_kinetics.py`.
+  - (Table 2-3) - six-group delayed neutron data used in `point_kinetics.py`.
   - Chapter 6 - Six-group point kinetics equations in the normalized reactivity/generation-time form used in `point_kinetics.py`, corresponding inhour equation in this same normalized form used in `Inhour_verification.py`, and Prompt Jump Approximation used in `Prompt_Jump_Approximation.py`.
