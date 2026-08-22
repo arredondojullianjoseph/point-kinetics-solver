@@ -22,7 +22,9 @@ $$\frac{dC_i}{dt} = \frac{\beta_i}{\Lambda} n(t) - \lambda_i C_i(t)$$
 - **Analytical Verification (Prompt Jump):** `Prompt_jump_verification.py` runs a short simulation to capture the almost instant power spike right after the step insertion and compares it against the analytical Prompt Jump Approximation. Currently agrees within 0.66%.
 - **Ramp Verification (Period):** `Ramp_period_verification.py` Checks the accuracy of a ramp reactivity simulation by looking at its final 
 growth rate. Once the ramp ends and reactivity stays flat at rho_final, the system should settle into the same stable period as step insertion. Currently the period agrees with the insertion within .237%. 
+- **Ramp Verification (Convergence):** `Ramp_convergence_verification.py` checks the simulation's numerical convergence by running two simulations, one with normal step size and another with half, then comparing. Currently agrees to within 8.58e-09.
 - **Detailed Documentation:** The script features conversational, beginner-friendly inline comments that explain the physics and mathematical reasoning behind the ODEs.
+- **Automated Tests:** `test_point_kinetics.py` turns the same checks from the verification scripts into pass/fail assertions using `pytest`.
 
 ## Verification Results
 ### Step
