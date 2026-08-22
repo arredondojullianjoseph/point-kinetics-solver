@@ -11,6 +11,9 @@ env/
 # Jupyter Notebook Checkpoints
 .ipynb_checkpoints/
 
+# Pytest Cache
+.pytest_cache/
+
 # IDE and System Files
 .vscode/
 .idea/
