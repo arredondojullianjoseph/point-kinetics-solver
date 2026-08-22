@@ -99,7 +99,7 @@ Running `Ramp_convergence_verification.py` with the same default ramp gives:
 
 A relative difference this small confirms the ramp solution is converged.
 
-##Limitations
+## Limitations
 - Point Kinetics only so local power tilts and rod-position effects aren't represented.
 - Six-group paramaters are hard coded and not configurable for fuels other then U-235
 - No reactivity feedback
