@@ -90,4 +90,4 @@ def test_ramp_is_converged():
     time_a, power_a = run_ramp(t_start, t_end, rho_final, t_span, 6000, max_step=1e-3)
     time_b, power_b = run_ramp(t_start, t_end, rho_final, t_span, 6000, max_step=5e-4)
     max_rel_diff = np.max(np.abs(power_a - power_b) / power_b)
-    assert max_rel_diff < 1e-6  # We've seen ~8.58e-09 in practice
+    assert max_rel_diff < 1e-6 
