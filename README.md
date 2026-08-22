@@ -75,7 +75,7 @@ $$\rho(t) = \rho_{final} \cdot \frac{t - t_{start}}{t_{end} - t_{start}}, \quad 
  
 Power accelerates smoothly through the ramp, then it settles into the same asymptotic exponential as step insertion once reactivity is constant. Since the reactivity itself is changing throughout the ramp window, there's no sharp jump the way there is for a step, which you'll see in the log-scale plot for ramp reactivity below. 
 
-#### Inhour Verification
+#### Period Verification
 There's no simple closed-form solution for a ramp insertion in the six-group model, so once the ramp ends and reactivity remains constant, the system should settle into the same stable period as the step insertion above. 
  
 Running `Ramp_period_verification.py` with the default ramp (0 to 200 pcm between t=1s and t=3s) gives:
