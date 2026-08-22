@@ -1,7 +1,7 @@
 # Point Reactor Kinetics Solver
-Status: Work in Progress 🚧
+Status: Complete ✅
 
-Welcome! I'm currently building this point reactor kinetics solver from the ground up. The core numerical solver, transient visualization, inline documentation, step and ramp insertions with two verifications for step insertion (Inhour and Prompt Jump) and one for Ramp insertion (Period Verification) are now in place. Next up: Ramp insertion convergance verification!
+A point reactor kinetics solver built from the ground up. The core numerical solver, transient visualization, inline documentation, step and ramp insertions, and verification for both (Inhour and Prompt Jump for the step, Period and Convergence checks for the ramp) are all in place as well as automatic tests for verifications.
 
 ## Mathematical Model
 The script (`point_kinetics.py`) solves the standard point kinetics equations for one prompt neutron group and six delayed neutron precursor groups:
@@ -84,11 +84,19 @@ Running `Ramp_period_verification.py` with the default ramp (0 to 200 pcm betwee
 | Percent difference | 0.237 % |
  
 The ramp case agrees with the inhour equation to within 0.24%, consistent with the step-case result above. This confirms the solver handles the ramp insertion correctly on the long timescale.
- 
 
-## What's next
-- **Ramp Convergence Verification:** Will check the simulation's numerical convergence by running two simulations, one with normal step size and another with half, then comparing. If cutting the step size in half doesn't change the answer, that's good evidence the solver's converged on the correct answer.
-- 
+ #### Convergence Verification
+Checks the simulation's numerical convergence by running two simulations, one with normal step size and another with half, then comparing. If cutting the step size in half doesn't change the answer, that's good evidence the solver's converged on the correct answer.
+
+Running `Ramp_convergence_verification.py` with the same default ramp gives:
+
+| Quantity | Value |
+|---|---|
+| Max relative difference (max_step 1e-3 vs 5e-4) | 8.58e-09 |
+
+A relative difference this small confirms the ramp solution is converged.
+
+
 ## Usage
 To run the current solver, ensure you have `numpy`, `scipy`, and `matplotlib` installed and then run:
 ```bash
@@ -106,6 +114,16 @@ To run the Ramp period verification:
 ```bash
 python Ramp_period_verification.py
 ```
+To run the Ramp convergence verification:
+```bash
+python Ramp_convergence_verification.py
+```
+## Running Tests
+Make sure you have `pytest` installed, then run:
+```bash
+pytest test_point_kinetics.py -v
+```
+
 ## Expected Output
 Running the solver with the default parameters will generate two transient response plots and automatically save them to your directory as `step_response.png` and `ramp_response.png`.
  
