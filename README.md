@@ -1,7 +1,8 @@
 # Point Reactor Kinetics Solver
-Status: Complete ✅
 
-A point reactor kinetics solver built from the ground up. The core numerical solver, transient visualization, inline documentation, step and ramp insertions, and verification for both (Inhour and Prompt Jump for the step, Period and Convergence checks for the ramp) are all in place as well as automatic tests for verifications.
+Six-group point reactor kinetics solver in Python. Solves the coupled prompt-neutron and delayed-precursor ODEs with a stiff Randau integrator, supports step and ramp reactivity insertions, and is verified against the Inhour equation and Prompt jump aproximation for step insertion and Period and convergance verification for ramp insertion. Automated tests cover the same checks. 
+
+**Scope:** Intended as a self study verification of the standard six-group equations. 
 
 ## Mathematical Model
 The script (`point_kinetics.py`) solves the standard point kinetics equations for one prompt neutron group and six delayed neutron precursor groups:
@@ -12,7 +13,7 @@ $$\frac{dC_i}{dt} = \frac{\beta_i}{\Lambda} n(t) - \lambda_i C_i(t)$$
 
 **Note:** In the script, the variable `lambda_decay` refers to the array of precursor decay constants ($\lambda_i$ above), and `gen_time` refers to the prompt neutron generation time ($\Lambda$ above). We use `lambda_decay` instead of the single-letter textbook notation because `lambda` is a reserved keyword in Python. Keep that in mind when comparing the equations to the script.
 
-## Current Implementation
+## Implementation
 - **Core Solver:** Solves the kinetics equations in Python, using `numpy` and `scipy`.
 - **Stiff ODE Integration:** Uses `scipy.integrate.solve_ivp` with the `Radau` method to handle the stiffness (the prompt neutron generation time is ~10⁻⁴ s, while the delayed neutron precursors evolve over seconds).
 - **Reactivity Insertion:** Models both step insertion ($\rho = 0.002$ at $t = 1$ s) and ramp insertion (linearly from $\rho = 0$ to $\rho = 0.002$ between $t = 1$ s and $t = 3$ s). 200 pcm is roughly 30% of $\beta$ for U-235, simulating a controllable transient safely below the prompt critical threshold.
@@ -98,7 +99,12 @@ Running `Ramp_convergence_verification.py` with the same default ramp gives:
 
 A relative difference this small confirms the ramp solution is converged.
 
-
+##Limitations
+- Point Kinetics only so local power tilts and rod-position effects aren't represented.
+- Six-group paramaters are hard coded and not configurable for fuels other then U-235
+- No reactivity feedback
+- limited insertion type (step and ramp)
+  
 ## Usage
 To run the current solver, ensure you have `numpy`, `scipy`, and `matplotlib` installed and then run:
 ```bash
