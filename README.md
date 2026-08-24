@@ -2,7 +2,7 @@
 
 Six-group point reactor kinetics solver in Python. Solves the coupled prompt-neutron and delayed-precursor ODEs with a stiff Randau integrator, supports step and ramp reactivity insertions, and is verified against the inhour equation and prompt jump approximation for the step insertion with period and convergence verifications for the ramp insertion. With default insertions and steady state conditions, all verifications achieve a >99% agreement. Automated tests cover the same checks. 
 
-**Scope:** Intended as a self study verification of the standard six-group equations. 
+**Scope:** Intended as a self-study verification of the standard six-group equations. 
 
 ## Mathematical Model
 The script (`point_kinetics.py`) solves the standard point kinetics equations for one prompt neutron group and six delayed neutron precursor groups:
