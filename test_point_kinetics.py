@@ -8,9 +8,9 @@ import numpy as np
 from scipy.integrate import solve_ivp
 
 from point_kinetics import reactivity, kinetics_odes, steady_state_y0
-from Inhour_verification import inhour_omega
-from Prompt_Jump_Approximation import prompt_jump_ratio
-from Ramp_period_verification import run_ramp
+from inhour_verification import inhour_omega
+from prompt_jump_verification import prompt_jump_ratio
+from ramp_period_verification import run_ramp
 
 def test_steady_state_y0_is_actually_steady():
     # At the reactor's starting steady state (rho = 0), the derivatives
