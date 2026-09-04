@@ -43,7 +43,7 @@ After a step insertion, power jumps almost instantly (precursors can't respond o
 Running `inhour_verification.py` with the default 200 pcm step:
 
 | Quantity | Value |
-|---|---|
+| --- | --- |
 | Reactivity step | 200.0 pcm |
 | Analytical period (inhour root) | 17.404 s |
 | Numerical period (fit, t ≥ 40 s) | 17.367 s |
@@ -60,7 +60,7 @@ This gives the near-instant power ratio right after a step insertion. The script
 Running `prompt_jump_verification.py` with the default 200 pcm step:
 
 | Quantity | Value |
-|---|---|
+| --- | --- |
 | Reactivity step | 200.0 pcm |
 | Analytical n(0+)/n₀ | 1.4442 |
 | Numerical n(t=1.1s)/n₀ | 1.4538 |
@@ -83,7 +83,7 @@ There's no simple closed-form solution for a ramp insertion in the six-group mod
 Running `ramp_period_verification.py` with the default ramp (0 to 200 pcm, t = 1 s to 3 s):
 
 | Quantity | Value |
-|---|---|
+| --- | --- |
 | Analytical period (inhour root at rho_final) | 17.404 s |
 | Numerical period (fit, t ≥ 40 s) | 17.362 s |
 | Percent difference | 0.237% |
@@ -97,7 +97,7 @@ Runs the simulation at normal step size and half step size, then compares. If ha
 Running `ramp_convergence_verification.py` with the default ramp:
 
 | Quantity | Value |
-|---|---|
+| --- | --- |
 | Max relative difference (max_step 1e-3 vs 5e-4) | 8.58e-09 |
 
 A difference this small confirms the ramp solution is converged.
@@ -111,25 +111,13 @@ A difference this small confirms the ramp solution is converged.
 
 ## Usage
 
-To run the solver:
-
-    python point_kinetics.py
-
-To run the inhour equation verification:
-
-    python Inhour_verification.py
-
-To run the prompt jump approximation verification:
-
-    python Prompt_Jump_Approximation.py
-
-To run the ramp period verification:
-
-    python Ramp_period_verification.py
-
-To run the ramp convergence verification:
-
-    python Ramp_convergence_verification.py
+```bash
+python point_kinetics.py
+python inhour_verification.py
+python prompt_jump_verification.py
+python ramp_period_verification.py
+python ramp_convergence_verification.py
+```
 
 ## Running tests
 
