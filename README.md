@@ -1,144 +1,146 @@
 # Point Reactor Kinetics Solver
 
-Six-group point reactor kinetics solver in Python. Solves the coupled prompt-neutron and delayed-precursor ODEs with a stiff Randau integrator, supports step and ramp reactivity insertions, and is verified against the inhour equation and prompt jump approximation for the step insertion with period and convergence verifications for the ramp insertion. With default insertions and steady state conditions, all verifications achieve a >99% agreement. Automated tests cover the same checks. 
+Six-group point reactor kinetics solver in Python. Solves the coupled prompt-neutron and delayed-precursor ODEs with a stiff Radau integrator. Supports step and ramp reactivity insertions. Verified against the inhour equation and prompt jump approximation for the step insertion, and against period and convergence checks for the ramp insertion. With default insertions and steady-state conditions, all verifications agree to within 1%. Automated tests cover the same checks.
 
-**Scope:** Intended as a self-study verification of the standard six-group equations. 
+Scope: Intended as a self-study verification of the standard six-group equations.
 
-## Mathematical Model
+## Mathematical model
+
 The script (`point_kinetics.py`) solves the standard point kinetics equations for one prompt neutron group and six delayed neutron precursor groups:
 
-$$\frac{dn}{dt} = \frac{\rho(t) - \beta_{total}}{\Lambda} n(t) + \sum_{i=1}^{6} \lambda_i C_i(t)$$
+dn/dt = [(ρ(t) − β_total) / Λ] n(t) + Σᵢ λᵢ Cᵢ(t)
 
-$$\frac{dC_i}{dt} = \frac{\beta_i}{\Lambda} n(t) - \lambda_i C_i(t)$$
+dCᵢ/dt = (βᵢ / Λ) n(t) − λᵢ Cᵢ(t)
 
-**Note:** In the script, the variable `lambda_decay` refers to the array of precursor decay constants ($\lambda_i$ above), and `gen_time` refers to the prompt neutron generation time ($\Lambda$ above). We use `lambda_decay` instead of the single-letter textbook notation because `lambda` is a reserved keyword in Python. Keep that in mind when comparing the equations to the script.
+Note: in the script, `lambda_decay` refers to the array of precursor decay constants (λᵢ above), and `gen_time` refers to the prompt neutron generation time (Λ above). This is the reverse of textbook notation, since `lambda` is a reserved keyword in Python. Keep that in mind when comparing the equations to the script.
 
 ## Implementation
-- **Core Solver:** Solves the kinetics equations in Python, using `numpy` and `scipy`.
-- **Stiff ODE Integration:** Uses `scipy.integrate.solve_ivp` with the `Radau` method to handle the stiffness (the prompt neutron generation time is ~10⁻⁴ s, while the delayed neutron precursors evolve over seconds).
-- **Reactivity Insertion:** Models both step insertion ($\rho = 0.002$ at $t = 1$ s) and ramp insertion (linearly from $\rho = 0$ to $\rho = 0.002$ between $t = 1$ s and $t = 3$ s). 200 pcm is roughly 30% of $\beta$ for U-235, simulating a controllable transient safely below the prompt critical threshold.
-- **Steady-State Initialization:** Automatically sets the initial precursor concentrations so the system starts from a critical steady state ($n_0 = 1$).
-- **Plotting & Visualization:** Uses `matplotlib` to graph the normalized reactor power versus time on a logarithmic scale, for both the step case and the ramp case.
-- **Step Verification (Inhour):** `Inhour_verification.py` solves the six-group model out to 60 s, finds the numerical reactor period, and calculates the percent error vs the root of the inhour equation (found via `scipy.optimize.brentq`). Currently agrees to within 0.21%.
-- **Step Verification (Prompt Jump):** `Prompt_Jump_verification.py` runs a short simulation to capture the almost instant power spike right after the step insertion and compares it against the analytical Prompt Jump Approximation. Currently agrees within 0.66%.
-- **Ramp Verification (Period):** `Ramp_period_verification.py` Checks the accuracy of a ramp reactivity simulation by looking at its final 
-growth rate. Once the ramp ends and reactivity stays flat at rho_final, the system should settle into the same stable period as step insertion. Currently the period agrees with the insertion within .237%. 
-- **Ramp Verification (Convergence):** `Ramp_convergence_verification.py` checks the simulation's numerical convergence by running two simulations, one with normal step size and another with half, then comparing. Currently agrees to within 8.58e-09.
-- **Detailed Documentation:** The script features conversational, beginner-friendly inline comments that explain the physics and mathematical reasoning behind the ODEs.
-- **Automated Tests:** `test_point_kinetics.py` turns the same checks from the verification scripts into pass/fail assertions using `pytest`.
 
-## Verification Results
+- **Core solver:** solves the kinetics equations using numpy and scipy.
+- **Stiff ODE integration:** uses `scipy.integrate.solve_ivp` with the Radau method (the prompt neutron generation time is ~10⁻⁴ s, while the delayed precursors evolve over seconds).
+- **Reactivity insertion:** models step insertion (ρ = 0.002 at t = 1 s) and ramp insertion (ρ = 0 to 0.002 linearly between t = 1 s and t = 3 s). 200 pcm is roughly 30% of β for U-235. This keeps the transient controllable and below the prompt critical threshold.
+- **Steady-state initialization:** sets initial precursor concentrations so the system starts from a critical steady state (n₀ = 1).
+- **Plotting:** uses matplotlib to graph normalized reactor power versus time on a log scale, for both the step and ramp cases.
+- **Step verification (inhour):** `inhour_verification.py` solves the model out to 60 s, finds the numerical reactor period, and checks percent error against the root of the inhour equation (via `scipy.optimize.brentq`). Agrees to within 0.21%.
+- **Step verification (prompt jump):** `prompt_jump_verification.py` captures the near-instant power spike after the step insertion and compares it against the analytical prompt jump approximation. Agrees to within 0.66%.
+- **Ramp verification (period):** `ramp_period_verification.py` checks the ramp simulation's final growth rate against the step-insertion period, once reactivity holds flat at `rho_final`. Agrees to within 0.24%.
+- **Ramp verification (convergence):** `ramp_convergence_verification.py` runs the simulation at normal step size and at half step size and compares. Agrees to within 8.58e-09.
+- **Inline documentation:** comments explain the physics and mathematical reasoning behind the ODEs.
+- **Automated tests:** `test_point_kinetics.py` turns the verification checks into pass/fail assertions using pytest.
+
+## Verification results
+
 ### Step
-After a step insertion, power doesn't ramp up smoothly
-it jumps almost instantly (precursors can't respond on a 10⁻⁴ s timescale), then climbs
-as an asymptotic exponential afterward on a period set by the precursor decay. You'll see this clearly on
-the log-scale plot below.
 
-#### Inhour Verification
-$$\rho = \Lambda \omega + \sum_{i=1}^{6} \frac{\beta_i \omega}{\omega + \lambda_i}$$
- 
-$1/\omega$ is the asymptotic reactor period that the reactivity settles into once the fast transients have died out. The script solves it by rearranging the equation to equal zero and finding the root with `scipy.optimize.brentq`, then it compares the root to an exponential fit of the tail of the simulated power curve.
+After a step insertion, power jumps almost instantly (precursors can't respond on a 10⁻⁴ s timescale), then climbs as an asymptotic exponential set by the precursor decay. The log-scale plot below shows this.
 
-Running `Inhour_verification.py` with the default 200 pcm step gives:
+### Inhour verification
+
+ρ = Λω + Σᵢ [βᵢω / (ω + λᵢ)]
+
+1/ω is the asymptotic reactor period the reactivity settles into once the fast transients have died out. The script finds the root with `scipy.optimize.brentq`, then compares it to an exponential fit of the simulated power curve's tail.
+
+Running `inhour_verification.py` with the default 200 pcm step:
 
 | Quantity | Value |
 |---|---|
 | Reactivity step | 200.0 pcm |
 | Analytical period (inhour root) | 17.404 s |
 | Numerical period (fit, t ≥ 40 s) | 17.367 s |
-| Percent difference | 0.213 % |
+| Percent difference | 0.213% |
 
-The six-group solver's asymptotic period agrees with the inhour equation to within 0.21%, confirming the ODE solver is behaving correctly in that timescale.
+The asymptotic period agrees with the inhour equation to within 0.21%. That remaining error isn't necessarily solver error: the inhour equation describes the pure asymptotic mode, but the actual transient is six exponential terms, and the fastest hasn't fully vanished by t = 40 s. A later fit window would lower the error further.
 
-That remaining 0.21% isn't necessarily solver error. The inhour equation describes the *pure* asymptotic mode, but the actual transient is six exponential terms (one per precursor group), and the fastest still hasn't completely vanished by t = 40 s. Pushing the fit window later would lower the error even further.
+### Prompt jump approximation
 
-#### Prompt Jump Approximation 
-$$\frac{n(0^+)}{n_0} = \frac{\beta_{total}}{\beta_{total} - \rho}$$
- 
-This gives the near-instant power ratio right after a step insertion. The script computes this directly, then compares it against the simulated power ratio shortly (0.1 s) after the step is inserted.
+n(0+)/n₀ = β_total / (β_total − ρ)
 
-Running `Prompt_jump_verification.py` with the default 200 pcm step gives:
+This gives the near-instant power ratio right after a step insertion. The script computes it directly and compares it against the simulated power ratio 0.1 s after the step.
+
+Running `prompt_jump_verification.py` with the default 200 pcm step:
 
 | Quantity | Value |
 |---|---|
 | Reactivity step | 200.0 pcm |
-| Analytical n(0+)/n0 | 1.4442 |
-| Numerical n(t=1.1s)/n0 | 1.4538 |
-| Percent difference | 0.661 % |
+| Analytical n(0+)/n₀ | 1.4442 |
+| Numerical n(t=1.1s)/n₀ | 1.4538 |
+| Percent difference | 0.661% |
 
-The solver's immediate post-insertion power ratio agrees with the Prompt Jump Approximation within .66%, confirming the fast-timescale behavior of the solver is correct in addition to its long-term asymptotic behavior.
+The solver's immediate post-insertion power ratio agrees with the prompt jump approximation to within 0.66%, confirming correct fast-timescale behavior.
 
 ### Ramp
-For a ramp insertion, reactivity rises linearly instead of jumping all at once:
- 
-$$\rho(t) = \rho_{final} \cdot \frac{t - t_{start}}{t_{end} - t_{start}}, \quad t_{start} \le t \le t_{end}$$
- 
-Power accelerates smoothly through the ramp, then it settles into the same asymptotic exponential as step insertion once reactivity is constant. Since the reactivity itself is changing throughout the ramp window, there's no sharp jump the way there is for a step, which you'll see in the log-scale plot for ramp reactivity below. 
 
-#### Period Verification
-There's no simple closed-form solution for a ramp insertion in the six-group model, so once the ramp ends and reactivity remains constant, the system should settle into the same stable period as the step insertion above. 
- 
-Running `Ramp_period_verification.py` with the default ramp (0 to 200 pcm between t=1s and t=3s) gives:
- 
+Reactivity rises linearly instead of jumping:
+
+ρ(t) = ρ_final · (t − t_start) / (t_end − t_start), for t_start ≤ t ≤ t_end
+
+Power accelerates smoothly through the ramp, then settles into the same asymptotic exponential as step insertion once reactivity is constant. There's no sharp jump, since reactivity itself is changing through the ramp window. See the log-scale ramp plot below.
+
+### Period verification
+
+There's no simple closed-form solution for a ramp insertion in the six-group model. Once the ramp ends and reactivity holds constant, the system should settle into the same stable period as step insertion.
+
+Running `ramp_period_verification.py` with the default ramp (0 to 200 pcm, t = 1 s to 3 s):
+
 | Quantity | Value |
 |---|---|
 | Analytical period (inhour root at rho_final) | 17.404 s |
 | Numerical period (fit, t ≥ 40 s) | 17.362 s |
-| Percent difference | 0.237 % |
- 
-The ramp case agrees with the inhour equation to within 0.24%, consistent with the step-case result above. This confirms the solver handles the ramp insertion correctly on the long timescale.
+| Percent difference | 0.237% |
 
- #### Convergence Verification
-Checks the simulation's numerical convergence by running two simulations, one with normal step size and another with half, then comparing. If cutting the step size in half doesn't change the answer, that's good evidence the solver's converged on the correct answer.
+Agrees with the inhour equation to within 0.24%, consistent with the step case.
 
-Running `Ramp_convergence_verification.py` with the same default ramp gives:
+### Convergence verification
+
+Runs the simulation at normal step size and half step size, then compares. If halving the step size doesn't change the answer, that's evidence the solver has converged.
+
+Running `ramp_convergence_verification.py` with the default ramp:
 
 | Quantity | Value |
 |---|---|
 | Max relative difference (max_step 1e-3 vs 5e-4) | 8.58e-09 |
 
-A relative difference this small confirms the ramp solution is converged.
+A difference this small confirms the ramp solution is converged.
 
 ## Limitations
-- Point Kinetics only so local power tilts and rod-position effects aren't represented.
-- Six-group paramaters are hard coded and not configurable for fuels other then U-235
-- No reactivity feedback
-- limited insertion type (step and ramp)
-  
-## Usage
-To run the current solver, ensure you have `numpy`, `scipy`, and `matplotlib` installed and then run:
-```bash
-python point_kinetics.py
-```
-To run the inhour equation verification:
-```bash
-python Inhour_verification.py
-```
-To run the Prompt Jump Approximation verification:
-```bash
-python Prompt_Jump_Approximation.py
-```
-To run the Ramp period verification:
-```bash
-python Ramp_period_verification.py
-```
-To run the Ramp convergence verification:
-```bash
-python Ramp_convergence_verification.py
-```
-## Running Tests
-Make sure you have `pytest` installed, then run:
-```bash
-pytest test_point_kinetics.py -v
-```
 
-## Expected Output
-Running the solver with the default parameters will generate two transient response plots and automatically save them to your directory as `step_response.png` and `ramp_response.png`.
- 
-![Step Reactivity Insertion Response](step_response.png)
-![Ramp Reactivity Insertion Response](ramp_response.png)
+- Point kinetics only; local power tilts and rod-position effects aren't represented.
+- Six-group parameters are hardcoded and not configurable for fuels other than U-235.
+- No reactivity feedback.
+- Limited to step and ramp insertion types.
+
+## Usage
+
+To run the solver:
+
+    python point_kinetics.py
+
+To run the inhour equation verification:
+
+    python inhour_verification.py
+
+To run the prompt jump approximation verification:
+
+    python prompt_jump_verification.py
+
+To run the ramp period verification:
+
+    python ramp_period_verification.py
+
+To run the ramp convergence verification:
+
+    python ramp_convergence_verification.py
+
+## Running tests
+
+    pytest test_point_kinetics.py -v
+
+## Expected output
+
+Running the solver with default parameters generates two transient response plots, saved as `step_response.png` and `ramp_response.png`.
 
 ## References
-- J. J. Duderstadt, L. J. Hamilton, *Nuclear Reactor Analysis*, John Wiley & Sons, 1976.
-  - (Table 2-3) - six-group delayed neutron data used in `point_kinetics.py`.
-  - Chapter 6 - Six-group point kinetics equations in the normalized reactivity/generation-time form used in `point_kinetics.py`, corresponding inhour equation in this same normalized form used in `Inhour_verification.py`, and Prompt Jump Approximation used in `Prompt_Jump_Approximation.py`.
+
+Duderstadt JJ, Hamilton LJ. 1976. Nuclear Reactor Analysis. New York: Wiley.
+- Table 2-3: six-group delayed neutron data used in `point_kinetics.py`.
+- Chapter 6: six-group point kinetics equations in the normalized reactivity/generation-time form used in `point_kinetics.py`, the corresponding inhour equation used in `inhour_verification.py`, and the prompt jump approximation used in `prompt_jump_verification.py`.
