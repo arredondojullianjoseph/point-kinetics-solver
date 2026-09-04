@@ -9,7 +9,7 @@ some step-size-dependent answer. Reuses run_ramp from Ramp_period_verification.p
 
 import numpy as np
 
-from Ramp_period_verification import run_ramp
+from ramp_period_verification import run_ramp
 
 def main():
     t_start, t_end, rho_final = 1.0, 3.0, 0.002
