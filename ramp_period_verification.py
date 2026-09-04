@@ -9,7 +9,7 @@ import numpy as np
 from scipy.integrate import solve_ivp
 
 from point_kinetics import reactivity_ramp, kinetics_odes, steady_state_y0
-from Inhour_verification import inhour_omega
+from inhour_verification import inhour_omega
 
 def run_ramp(t_start, t_end, rho_final, t_span, n_points, max_step):
     """
