@@ -117,19 +117,19 @@ To run the solver:
 
 To run the inhour equation verification:
 
-    python inhour_verification.py
+    python Inhour_verification.py
 
 To run the prompt jump approximation verification:
 
-    python prompt_jump_verification.py
+    python Prompt_Jump_Approximation.py
 
 To run the ramp period verification:
 
-    python ramp_period_verification.py
+    python Ramp_period_verification.py
 
 To run the ramp convergence verification:
 
-    python ramp_convergence_verification.py
+    python Ramp_convergence_verification.py
 
 ## Running tests
 
