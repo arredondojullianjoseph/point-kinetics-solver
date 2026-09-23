@@ -20,8 +20,9 @@ beta = np.array(
 )  # The fraction of neutrons that are delayed in each group
 beta_total = beta.sum()  # The total delayed neutron fraction (~0.0065 for U-235)
 gen_time = 1e-4  # The prompt neutron generation time (Lambda, in seconds).
-# Lumped UO2-ish fuel: T rides along in y[7] but does not change rho (Doppler off).
-T0 = 900.0  # Initial fuel temperature (K), delayed-critical equilibrium with n0 = 1
+
+# Lumped UO2-ish fuel
+T0 = 900.0  # Initial fuel temperature (K)
 T_coolant = 580.0  # Coolant temperature (K)
 tau_fuel = 5.0  # Fuel-to-coolant heat-removal time constant (s)
 
@@ -55,7 +56,7 @@ def kinetics_odes(t, y, reactivity_fn=reactivity):
     
     n = y[0]  # The reactor power (neutron population, n).
     C = y[1:7]  # The concentrations of our delayed neutron precursors
-    T = y[7]  # Lumped fuel temperature (K); Newton cooling only — rho is still external.
+    T = y[7]  # Lumped fuel temperature (K); Newton cooling only
     rho = reactivity_fn(t)
     dydt = np.zeros_like(y)
     
@@ -66,7 +67,7 @@ def kinetics_odes(t, y, reactivity_fn=reactivity):
     for i in range(6):
         dydt[i + 1] = (beta[i] / gen_time) * n - lambda_decay[i] * C[i]
 
-    # Heat generation vs Newton cooling, built so (n, T) = (1, T0) is steady: dT/dt = 0.
+    # Heat generation vs Newton cooling (n, T) = (1, T0) is steady: dT/dt = 0.
     dydt[7] = ((T0 - T_coolant) * n - (T - T_coolant)) / tau_fuel
     return dydt
     
