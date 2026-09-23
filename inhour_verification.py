@@ -12,7 +12,7 @@ import numpy as np
 from scipy.integrate import solve_ivp
 from scipy.optimize import brentq
 
-from point_kinetics import lambda_decay, beta, beta_total, gen_time, reactivity, kinetics_odes
+from point_kinetics import lambda_decay, beta, gen_time, kinetics_odes, steady_state_y0
 
 
 def inhour_omega(rho):
@@ -39,12 +39,7 @@ def main():
     rho = 0.002  # The reactivity step (200 pcm)
     t_fit_start = 40.0  # Late enough that only the slowest-decaying precursor group is still contributing
 
-    # Assumes the reactor has been running at a steady power level of 1 for a while.
-    # This means everything is in balance (the derivatives are zero),
-    # so the precursors are in equilibrium (dC_i/dt = 0 => C_i = beta_i * n0 / (Lambda * lambda_i)).
-    n0 = 1.0
-    C0 = beta * n0 / (gen_time * lambda_decay)
-    y0 = np.concatenate(([n0], C0))
+    y0 = steady_state_y0()
 
     # Generates what happens over 60 seconds, grabbing 4000 data points
     t_span = (0.0, 60.0)

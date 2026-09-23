@@ -1,26 +1,33 @@
 # Point Reactor Kinetics Solver
 
-Six-group point reactor kinetics solver in Python. Solves the coupled prompt-neutron and delayed-precursor ODEs with a stiff Radau integrator. Supports step and ramp reactivity insertions. Verified against the inhour equation and prompt jump approximation for the step insertion, and against period and convergence checks for the ramp insertion. With default insertions and steady-state conditions, all verifications agree to within 1%. Automated tests cover the same checks.
+Six-group point reactor kinetics solver in Python. Solves the coupled prompt-neutron, delayed-precursor, and lumped-fuel-temperature ODEs with a stiff Radau integrator. Supports step and ramp reactivity insertions. Fuel temperature is integrated with Newton cooling but is not yet coupled back into reactivity (Doppler feedback is off). Verified against the inhour equation and prompt jump approximation for the step insertion, and against period and convergence checks for the ramp insertion. With default insertions and steady-state conditions, all verifications agree to within 1%. Automated tests cover the same checks.
 
-Scope: Intended as a self-study verification of the standard six-group equations.
+Scope: Intended as a self-study verification of the standard six-group equations, extended step by step toward Doppler reactivity feedback.
 
 ## Mathematical model
 
-The script (`point_kinetics.py`) solves the standard point kinetics equations for one prompt neutron group and six delayed neutron precursor groups:
+The script (`point_kinetics.py`) solves the standard point kinetics equations for one prompt neutron group and six delayed neutron precursor groups, plus a lumped fuel energy balance. The state vector is `y = [n, C₁, …, C₆, T]`.
 
 dn/dt = [(ρ(t) − β_total) / Λ] n(t) + Σᵢ λᵢ Cᵢ(t)
 
 dCᵢ/dt = (βᵢ / Λ) n(t) − λᵢ Cᵢ(t)
 
+dT/dt = [(T₀ − T_c) n(t) − (T − T_c)] / τ
+
+ρ(t) is still the external insertion only (step or ramp); temperature does not yet change reactivity. The heat-balance form is constructed so (n, T) = (1, T₀) is an equilibrium: heat generation at n = 1 exactly matches Newton cooling from T₀ down to coolant temperature T_c.
+
+Hardcoded thermal constants (illustrative UO2-ish values, not a specific core design): T₀ = 900 K (`T0`), T_c = 580 K (`T_coolant`), τ = 5 s (`tau_fuel`).
+
 Note: in the script, `lambda_decay` refers to the array of precursor decay constants (λᵢ above), and `gen_time` refers to the prompt neutron generation time (Λ above). This is the reverse of textbook notation, since `lambda` is a reserved keyword in Python. Keep that in mind when comparing the equations to the script.
 
 ## Implementation
 
-- **Core solver:** solves the kinetics equations using numpy and scipy.
+- **Core solver:** solves the kinetics and fuel-temperature equations using numpy and scipy.
 - **Stiff ODE integration:** uses `scipy.integrate.solve_ivp` with the Radau method (the prompt neutron generation time is ~10⁻⁴ s, while the delayed precursors evolve over seconds).
-- **Reactivity insertion:** models step insertion (ρ = 0.002 at t = 1 s) and ramp insertion (ρ = 0 to 0.002 linearly between t = 1 s and t = 3 s). 200 pcm is roughly 30% of β for U-235. This keeps the transient controllable and below the prompt critical threshold.
-- **Steady-state initialization:** sets initial precursor concentrations so the system starts from a critical steady state (n₀ = 1).
-- **Plotting:** uses matplotlib to graph normalized reactor power versus time on a log scale, for both the step and ramp cases.
+- **Reactivity insertion:** models step insertion (ρ = 0.002 at t = 1 s) and ramp insertion (ρ = 0 to 0.002 linearly between t = 1 s and t = 3 s). 200 pcm is roughly 30% of β for U-235. This keeps the transient controllable and below the prompt critical threshold. With Doppler still off, these insertions produce unbounded exponential growth after the prompt jump, same as a constant-ρ model.
+- **Lumped fuel temperature:** always integrated as `y[7]` with Newton cooling; precursors occupy `y[1:7]`. Temperature rides along with power but does not feed back into ρ yet.
+- **Steady-state initialization:** `steady_state_y0()` sets precursor concentrations so the system starts from a critical steady state (n₀ = 1) and fuel temperature T₀ so dT/dt = 0 at that power.
+- **Plotting:** uses matplotlib to graph normalized reactor power versus time on a log scale, for both the step and ramp cases. Fuel temperature is integrated but not plotted yet.
 - **Step verification (inhour):** `inhour_verification.py` solves the model out to 60 s, finds the numerical reactor period, and checks percent error against the root of the inhour equation (via `scipy.optimize.brentq`). Agrees to within 0.21%.
 - **Step verification (prompt jump):** `prompt_jump_verification.py` captures the near-instant power spike after the step insertion and compares it against the analytical prompt jump approximation. Agrees to within 0.66%.
 - **Ramp verification (period):** `ramp_period_verification.py` checks the ramp simulation's final growth rate against the step-insertion period, once reactivity holds flat at `rho_final`. Agrees to within 0.24%.
@@ -106,7 +113,9 @@ A difference this small confirms the ramp solution is converged.
 
 - Point kinetics only; local power tilts and rod-position effects aren't represented.
 - Six-group parameters are hardcoded and not configurable for fuels other than U-235.
-- No reactivity feedback.
+- Fuel is a single lumped node with a fixed coolant temperature; there is no clad or coolant dynamics.
+- Fuel temperature is tracked but not yet coupled to reactivity (no Doppler or other feedback), so a positive insertion still grows without bound.
+- Thermal constants (T₀, T_c, τ) are hardcoded illustrative values, not a specific core design.
 - Limited to step and ramp insertion types.
 
 ## Usage
@@ -125,7 +134,7 @@ python ramp_convergence_verification.py
 
 ## Expected output
 
-Running the solver with default parameters generates two transient response plots, saved as `step_response.png` and `ramp_response.png`.
+Running the solver with default parameters generates two transient response plots, saved as `step_response.png` and `ramp_response.png`. Those figures show normalized power only; fuel temperature is part of the ODE state but is not yet written to the plots.
 
 ## References
 

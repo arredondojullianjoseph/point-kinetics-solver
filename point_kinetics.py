@@ -20,6 +20,10 @@ beta = np.array(
 )  # The fraction of neutrons that are delayed in each group
 beta_total = beta.sum()  # The total delayed neutron fraction (~0.0065 for U-235)
 gen_time = 1e-4  # The prompt neutron generation time (Lambda, in seconds).
+# Lumped UO2-ish fuel: T rides along in y[7] but does not change rho (Doppler off).
+T0 = 900.0  # Initial fuel temperature (K), delayed-critical equilibrium with n0 = 1
+T_coolant = 580.0  # Coolant temperature (K)
+tau_fuel = 5.0  # Fuel-to-coolant heat-removal time constant (s)
 
 def reactivity(t):
     """
@@ -49,8 +53,9 @@ def kinetics_odes(t, y, reactivity_fn=reactivity):
     without touching the ODEs themselves.
     """
     
-    n = y[0] # The reactor power (neutron population, n).
-    C = y[1:] # The concentrations of our delayed neutron precursors
+    n = y[0]  # The reactor power (neutron population, n).
+    C = y[1:7]  # The concentrations of our delayed neutron precursors
+    T = y[7]  # Lumped fuel temperature (K); Newton cooling only — rho is still external.
     rho = reactivity_fn(t)
     dydt = np.zeros_like(y)
     
@@ -60,15 +65,18 @@ def kinetics_odes(t, y, reactivity_fn=reactivity):
     # Each precursor group is grown by fission at a rate of beta_i/Lambda * n, and depletes by its own decay constant.
     for i in range(6):
         dydt[i + 1] = (beta[i] / gen_time) * n - lambda_decay[i] * C[i]
+
+    # Heat generation vs Newton cooling, built so (n, T) = (1, T0) is steady: dT/dt = 0.
+    dydt[7] = ((T0 - T_coolant) * n - (T - T_coolant)) / tau_fuel
     return dydt
     
 def steady_state_y0(n0=1.0):
     # Assumes the reactor has been running at a steady power level of n0 for a while.
     # This means everything is in balance (the derivatives are zero),
     # so the precursors are in equilibrium (dC_i/dt = 0 => C_i = beta_i * n0 / (Lambda * lambda_i)).
-    # Pulled out into its own function since every script in this project needs it.
+    # Fuel starts at T0 so Newton cooling is also in equilibrium when n0 = 1.
     C0 = beta * n0 / (gen_time * lambda_decay)
-    return np.concatenate(([n0], C0))
+    return np.concatenate(([n0], C0, [T0]))
     
 def main():
     y0 = steady_state_y0()
