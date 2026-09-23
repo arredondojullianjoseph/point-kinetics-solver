@@ -19,3 +19,6 @@ env/
 .idea/
 .DS_Store
 Thumbs.db
+
+# Personal notes (never committed)
+NOTES_PRIVATE.md
