@@ -26,10 +26,8 @@ T0 = 900.0  # Initial fuel temperature (K)
 T_coolant = 580.0  # Coolant temperature (K)
 tau_fuel = 5.0  # Fuel-to-coolant heat-removal time constant (s)
 
-# Linear Doppler coefficient (1/K). Negative: hotter fuel adds negative reactivity.
-# alpha_D defaults to 0.0 everywhere in kinetics_odes, so existing callers
-# (inhour/prompt-jump/ramp verification, the plain step/ramp plots) are
-# unaffected unless they explicitly opt in with this value.
+# Linear Doppler coefficient (1/K). Hotter fuel adds negative reactivity.
+# alpha_D defaults to 0.0 everywhere in kinetics_odes, so existing callers aren't affected unless they opt in with this value.
 ALPHA_D = -2e-5  # ~ -2 pcm/K
 
 def reactivity(t):
@@ -58,14 +56,14 @@ def kinetics_odes(t, y, reactivity_fn=reactivity, alpha_D=0.0):
     """
     Reactivity_fn lets us use different insertions (step, ramp, etc.)
     without touching the ODEs themselves. alpha_D defaults to 0.0, so Doppler
-    feedback is off unless a caller explicitly passes a nonzero value.
+    feedback is off unless a passed a nonzero value.
     """
     
     n = y[0]  # The reactor power (neutron population, n).
     C = y[1:7]  # The concentrations of our delayed neutron precursors
     T = y[7]  # Lumped fuel temperature (K); Newton cooling only
     rho_ext = reactivity_fn(t)  # The externally-driven insertion (step or ramp).
-    rho = rho_ext + alpha_D * (T - T0)  # Doppler feedback term; zero when alpha_D = 0.
+    rho = rho_ext + alpha_D * (T - T0)  # Doppler feedback term
     dydt = np.zeros_like(y)
     
     # Prompt term (rho - beta)/Lambda * n, plus the delayed source from precursors decaying back into neutrons.
@@ -80,6 +78,7 @@ def kinetics_odes(t, y, reactivity_fn=reactivity, alpha_D=0.0):
     return dydt
     
 def steady_state_y0(n0=1.0):
+
     # Assumes the reactor has been running at a steady power level of n0 for a while.
     # This means everything is in balance (the derivatives are zero),
     # so the precursors are in equilibrium (dC_i/dt = 0 => C_i = beta_i * n0 / (Lambda * lambda_i)).
@@ -136,6 +135,7 @@ def main():
     plt.savefig("step_response.png", dpi=150)
     
 def main_ramp():
+    
     # Same steady-state setup as main(), just fed into the ramp insertion instead
     y0 = steady_state_y0()
     
@@ -178,9 +178,7 @@ def main_ramp():
 
 def _plot_power_and_temperature(time, power, temperature, title, filename, insertion_marker):
     """
-    Shared plotting helper for the Doppler-on cases: log-scale power on the left
-    axis, fuel temperature on the right, so you can see the power peak and the
-    temperature rise that caused it on the same figure.
+    Shared plotting helper for the Doppler-on cases
     """
     fig, ax_power = plt.subplots(figsize=(10, 6))
 
@@ -208,8 +206,8 @@ def _plot_power_and_temperature(time, power, temperature, title, filename, inser
     plt.close(fig)
 
 def main_step_doppler():
-    # Same 200 pcm step as main(), but with linear Doppler feedback (alpha_D = ALPHA_D)
-    # coupled into rho. Power should peak and level off instead of growing forever.
+
+    # Same 200 pcm step as main(), but with linear Doppler feedback 
     y0 = steady_state_y0()
 
     t_span = (0.0, 60.0)
@@ -243,6 +241,7 @@ def main_step_doppler():
     )
 
 def main_ramp_doppler():
+
     # Same 0->200 pcm ramp as main_ramp(), but with linear Doppler feedback on.
     y0 = steady_state_y0()
 

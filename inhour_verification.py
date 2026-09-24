@@ -21,6 +21,7 @@ def inhour_omega(rho):
     which gives us the inverse of the asymptotic reactor period.
     """
     def f(omega):
+
         # The inhour equation rearranged to equal 0:
         # Lambda*omega + sum(beta_i * omega / (omega + lambda_i)) - rho = 0
         return (gen_time * omega
@@ -36,6 +37,7 @@ def main():
     Sets up the initial steady-state conditions, runs the numerical integration,
     and compares the resulting reactor period against the theoretical value.
     """
+    
     rho = 0.002  # The reactivity step (200 pcm)
     t_fit_start = 40.0  # Late enough that only the slowest-decaying precursor group is still contributing
 
