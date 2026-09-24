@@ -46,6 +46,8 @@ Note: in the script, `lambda_decay` refers to the array of precursor decay const
 
 After a step insertion, power jumps almost instantly (precursors can't respond on a 10⁻⁴ s timescale), then climbs as an asymptotic exponential set by the precursor decay. The log-scale plot below shows this.
 
+![Step reactivity insertion, Doppler off](step_response.png)
+
 ### Inhour verification
 
 $$\rho = \Lambda \omega + \sum_{i} \frac{\beta_i \omega}{\omega + \lambda_i}$$
@@ -87,6 +89,8 @@ Reactivity rises linearly instead of jumping:
 $$\rho(t) = \rho_{\text{final}} \cdot \frac{t - t_{\text{start}}}{t_{\text{end}} - t_{\text{start}}}, \quad t_{\text{start}} \le t \le t_{\text{end}}$$
 
 Power accelerates smoothly through the ramp, then settles into the same asymptotic exponential as step insertion once reactivity is constant. There's no sharp jump, since reactivity itself is changing through the ramp window. See the log-scale ramp plot below.
+
+![Ramp reactivity insertion, Doppler off](ramp_response.png)
 
 ### Period verification
 
@@ -144,6 +148,10 @@ Running `python point_kinetics.py` generates four transient response plots:
 
 - `step_response.png`, `ramp_response.png`: normalized power only, Doppler off (unbounded growth after the prompt jump).
 - `step_doppler_response.png`, `ramp_doppler_response.png`: normalized power (left axis, log scale) and fuel temperature (right axis), Doppler on. Power peaks and levels off around $n \approx 1.3$ as $T$ settles near $T_0 + 100\,K$.
+
+![Step reactivity insertion, Doppler on](step_doppler_response.png)
+
+![Ramp reactivity insertion, Doppler on](ramp_doppler_response.png)
 
 ## References
 
