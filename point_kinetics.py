@@ -26,6 +26,12 @@ T0 = 900.0  # Initial fuel temperature (K)
 T_coolant = 580.0  # Coolant temperature (K)
 tau_fuel = 5.0  # Fuel-to-coolant heat-removal time constant (s)
 
+# Linear Doppler coefficient (1/K). Negative: hotter fuel adds negative reactivity.
+# alpha_D defaults to 0.0 everywhere in kinetics_odes, so existing callers
+# (inhour/prompt-jump/ramp verification, the plain step/ramp plots) are
+# unaffected unless they explicitly opt in with this value.
+ALPHA_D = -2e-5  # ~ -2 pcm/K
+
 def reactivity(t):
     """
     Step insertion: reactor sits at delayed critical until t = 1 s,
@@ -48,16 +54,18 @@ def reactivity_ramp(t, t_start, t_end, rho_final):
     else:
         return rho_final
         
-def kinetics_odes(t, y, reactivity_fn=reactivity):
+def kinetics_odes(t, y, reactivity_fn=reactivity, alpha_D=0.0):
     """
     Reactivity_fn lets us use different insertions (step, ramp, etc.)
-    without touching the ODEs themselves.
+    without touching the ODEs themselves. alpha_D defaults to 0.0, so Doppler
+    feedback is off unless a caller explicitly passes a nonzero value.
     """
     
     n = y[0]  # The reactor power (neutron population, n).
     C = y[1:7]  # The concentrations of our delayed neutron precursors
     T = y[7]  # Lumped fuel temperature (K); Newton cooling only
-    rho = reactivity_fn(t)
+    rho_ext = reactivity_fn(t)  # The externally-driven insertion (step or ramp).
+    rho = rho_ext + alpha_D * (T - T0)  # Doppler feedback term; zero when alpha_D = 0.
     dydt = np.zeros_like(y)
     
     # Prompt term (rho - beta)/Lambda * n, plus the delayed source from precursors decaying back into neutrons.
@@ -167,7 +175,114 @@ def main_ramp():
     plt.legend(fontsize=12)
     plt.tight_layout()
     plt.savefig("ramp_response.png", dpi=150)
-    
+
+def _plot_power_and_temperature(time, power, temperature, title, filename, insertion_marker):
+    """
+    Shared plotting helper for the Doppler-on cases: log-scale power on the left
+    axis, fuel temperature on the right, so you can see the power peak and the
+    temperature rise that caused it on the same figure.
+    """
+    fig, ax_power = plt.subplots(figsize=(10, 6))
+
+    ax_power.plot(time, power, "b-", linewidth=2, label="Relative reactor power (n)")
+    ax_power.set_xlabel("Time (seconds)", fontsize=12)
+    ax_power.set_ylabel("Normalized power", color="b", fontsize=12)
+    ax_power.set_yscale("log")
+    ax_power.tick_params(axis="y", labelcolor="b")
+    ax_power.grid(True, which="both", linestyle="--", alpha=0.7)
+
+    ax_temp = ax_power.twinx()
+    ax_temp.plot(time, temperature, "orange", linewidth=2, label="Fuel temperature (T)")
+    ax_temp.set_ylabel("Fuel temperature (K)", color="orange", fontsize=12)
+    ax_temp.tick_params(axis="y", labelcolor="orange")
+
+    insertion_marker(ax_power)
+
+    lines_power, labels_power = ax_power.get_legend_handles_labels()
+    lines_temp, labels_temp = ax_temp.get_legend_handles_labels()
+    ax_power.legend(lines_power + lines_temp, labels_power + labels_temp, fontsize=11, loc="upper right")
+
+    plt.title(title, fontsize=14)
+    plt.tight_layout()
+    plt.savefig(filename, dpi=150)
+    plt.close(fig)
+
+def main_step_doppler():
+    # Same 200 pcm step as main(), but with linear Doppler feedback (alpha_D = ALPHA_D)
+    # coupled into rho. Power should peak and level off instead of growing forever.
+    y0 = steady_state_y0()
+
+    t_span = (0.0, 60.0)
+    t_eval = np.linspace(*t_span, 4000)
+
+    solution = solve_ivp(
+        fun=kinetics_odes,
+        t_span=t_span,
+        y0=y0,
+        t_eval=t_eval,
+        method="Radau",
+        max_step=1e-3,
+        atol=1e-10,
+        rtol=1e-8,
+        args=(reactivity, ALPHA_D),  # passed through to kinetics_odes as (reactivity_fn, alpha_D)
+    )
+    time = solution.t
+    power = solution.y[0]
+    temperature = solution.y[7]
+
+    def mark_step(ax):
+        ax.axvline(x=1.0, color="r", linestyle="--", alpha=0.5, label="Reactivity step insertion")
+
+    _plot_power_and_temperature(
+        time,
+        power,
+        temperature,
+        "Point Reactor Kinetics Transient (Step Insertion, Doppler Feedback On)",
+        "step_doppler_response.png",
+        mark_step,
+    )
+
+def main_ramp_doppler():
+    # Same 0->200 pcm ramp as main_ramp(), but with linear Doppler feedback on.
+    y0 = steady_state_y0()
+
+    t_start, t_end, rho_final = 1.0, 3.0, 0.002
+
+    def ramp_fn(t):
+        return reactivity_ramp(t, t_start, t_end, rho_final)
+
+    t_span = (0.0, 60.0)
+    t_eval = np.linspace(*t_span, 4000)
+
+    solution = solve_ivp(
+        fun=kinetics_odes,
+        t_span=t_span,
+        y0=y0,
+        t_eval=t_eval,
+        method="Radau",
+        max_step=1e-3,
+        atol=1e-10,
+        rtol=1e-8,
+        args=(ramp_fn, ALPHA_D),  # passed through to kinetics_odes as (reactivity_fn, alpha_D)
+    )
+    time = solution.t
+    power = solution.y[0]
+    temperature = solution.y[7]
+
+    def mark_ramp(ax):
+        ax.axvspan(t_start, t_end, color="r", alpha=0.15, label="Reactivity ramp")
+
+    _plot_power_and_temperature(
+        time,
+        power,
+        temperature,
+        "Point Reactor Kinetics Transient (Ramp Insertion, Doppler Feedback On)",
+        "ramp_doppler_response.png",
+        mark_ramp,
+    )
+
 if __name__ == "__main__":
     main()
     main_ramp()
+    main_step_doppler()
+    main_ramp_doppler()
