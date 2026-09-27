@@ -1,5 +1,7 @@
 # Point Reactor Kinetics Solver
 
+[![tests](https://github.com/arredondojullianjoseph/point-kinetics-solver/actions/workflows/tests.yml/badge.svg)](https://github.com/arredondojullianjoseph/point-kinetics-solver/actions/workflows/tests.yml)
+
 Six-group point reactor kinetics solver in Python. Solves the coupled prompt-neutron, delayed-precursor, and lumped-fuel-temperature ODEs with a stiff Radau integrator. Supports step and ramp reactivity insertions. Fuel temperature is integrated with Newton cooling and, when the linear Doppler coefficient is enabled, feeds back into reactivity so power peaks and settles instead of growing forever. Verified against the inhour equation and prompt jump approximation for the step insertion, and against period and convergence checks for the ramp insertion. With default insertions and steady-state conditions, all verifications agree to within 1%. Automated tests cover the same checks.
 
 Scope: Intended as a self-study verification of the standard six-group equations, extended step by step toward Doppler reactivity feedback.
@@ -128,7 +130,18 @@ A difference this small confirms the ramp solution is converged.
 - Thermal constants ($T_0$, $T_c$, $\tau$, $\alpha_D$) are hardcoded illustrative values, not a specific core design.
 - Limited to step and ramp insertion types.
 
+## Installation
+
+```bash
+pip install -e .
+pytest
+```
+
+`requirements.txt` is still available: `pip install -r requirements.txt`.
+
 ## Usage
+
+Doppler feedback is off by default (`alpha_D = 0`). `step_response.png` is the default case, so its unbounded growth after the prompt jump is expected, not a failure. `step_doppler_response.png` is the opt-in Doppler case, where power levels off.
 
 ```bash
 python point_kinetics.py

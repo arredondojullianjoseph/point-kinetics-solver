@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "point_kinetics_solver"
+version = "0.1.0"
+description = "Six-group point reactor kinetics solver with lumped fuel temperature and optional linear Doppler feedback"
+readme = "README.md"
+authors = [{ name = "Jullian J. Arredondo", email = "arredondojullianjoseph@gmail.com" }]
+license = { text = "MIT" }
+requires-python = ">=3.10"
+dependencies = [
+    "numpy>=1.24.0",
+    "scipy>=1.10.0",
+    "matplotlib>=3.7.0",
+    "pytest>=7.0",
+]
+
+[tool.setuptools]
+py-modules = [
+    "point_kinetics",
+    "inhour_verification",
+    "prompt_jump_verification",
+    "ramp_period_verification",
+    "ramp_convergence_verification",
+]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
