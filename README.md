@@ -20,7 +20,7 @@ $\rho(t)$ is the external insertion (step or ramp). $T$ feeds back into reactivi
 
 $$\rho_{\text{total}} = \rho(t) + \alpha_D (T - T_0)$$
 
-`alpha_D` defaults to `0.0` everywhere it isn't explicitly passed, so $\rho_{\text{total}} = \rho(t)$ and every existing script/test is unaffected. The heat-balance form is constructed so $(n, T) = (1, T_0)$ is an equilibrium: heat generation at $n = 1$ exactly matches Newton cooling from $T_0$ down to coolant temperature $T_c$.
+`alpha_D` defaults to `0.0` everywhere, so $\rho_{\text{total}} = \rho(t)$ and every existing script/test is unaffected. The heat-balance form is constructed so $(n, T) = (1, T_0)$ is an equilibrium: heat generation at $n = 1$ exactly matches Newton cooling from $T_0$ down to coolant temperature $T_c$.
 
 Hardcoded thermal constants (illustrative UO2-ish values, not a specific core design): $T_0 = 900$ K (`T0`), $T_c = 580$ K (`T_coolant`), $\tau = 5$ s (`tau_fuel`), $\alpha_D = -2 \times 10^{-5}$ /K, i.e. about -2 pcm/K (`ALPHA_D`). $\alpha_D$ is negative because hotter fuel adds negative reactivity (Doppler broadening of resonance absorption). At this value, a 200 pcm step is compensated once fuel heats by $\Delta T = -\rho / \alpha_D \approx 100$ K.
 
@@ -137,7 +137,7 @@ pip install -e .
 pytest
 ```
 
-`requirements.txt` is still available: `pip install -r requirements.txt`.
+`requirements.txt` is available: `pip install -r requirements.txt`.
 
 ## Usage
 
